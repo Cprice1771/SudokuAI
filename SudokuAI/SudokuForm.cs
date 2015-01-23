@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SudokuAI
 {
     public partial class SudokuForm : Form
     {
-        int Iterations;
-        int GuessCount;
+        private int _iterations;
+        private int _guessCount;
+        private int _playsMade;
+
+        private const string INPUT = "\\Input\\Medium\\Puzzle189Medium.sd";
 
         public SudokuForm()
         {
             InitializeComponent();
-            fileTextBox.Text = Directory.GetCurrentDirectory() + "\\Input\\Easy\\Puzzle189Easy.sd";
+            fileTextBox.Text = Directory.GetCurrentDirectory() + INPUT;
         }
 
         private void runButton_Click(object sender, EventArgs e)
@@ -50,19 +47,22 @@ namespace SudokuAI
             }
 
             output += "\n";
-            output += "Iterations: " + Iterations + "\n";
-            output += "Guesses: " + GuessCount + "\n";
+            output += "Iterations: " + _iterations + "\n";
+            output += "Guesses: " + _guessCount + "\n";
+            output += "Plays Made: " + _playsMade + "\n";
 
             return output;
         }
 
         private void selectFileButton_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.InitialDirectory = Directory.GetCurrentDirectory();
+            OpenFileDialog dialog = new OpenFileDialog
+            {
+                InitialDirectory = Directory.GetCurrentDirectory()
+            };
 
             //Only update the text box if the user selected OK
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
                 //Update the text box with the new file name
                 fileTextBox.Text = dialog.FileName;
@@ -81,18 +81,18 @@ namespace SudokuAI
                 }
             }
 
-            Dictionary<Board, List<List<List<int>>>> PreviousGuessesDict = new Dictionary<Board, List<List<List<int>>>>();
-            KeyValuePair<Board, List<List<List<int>>>> CurrentGuess = new KeyValuePair<Board, List<List<List<int>>>>(board, emptyGuesses);
-            bool madeProgress;
+            Dictionary<Board, List<List<List<int>>>> previousGuessesDict = new Dictionary<Board, List<List<List<int>>>>();
+            KeyValuePair<Board, List<List<List<int>>>> currentGuess = new KeyValuePair<Board, List<List<List<int>>>>(board, emptyGuesses);
 
             int bestGuess = 1;
-            Iterations = 0;
-            GuessCount = 0;
+            _iterations = 0;
+            _guessCount = 0;
+            _playsMade = 0;
             while (board.Unsolved)
             {
                 bool exhaustedGuesses = false;
-                madeProgress = false;
-                Iterations++;
+                bool madeProgress = false;
+                _iterations++;
 
                 for(int i = 0; i < board.Count; i++)
                 {
@@ -107,19 +107,17 @@ namespace SudokuAI
                                 //If were guessing
                                 if (bestGuess > 1)
                                 {
-                                    bestGuess = 1;
-                                    PreviousGuessesDict.Add(CurrentGuess.Key, CurrentGuess.Value);
-                                    GuessCount++;
-                                    CurrentGuess = new KeyValuePair<Board, List<List<List<int>>>>(board, emptyGuesses);
+                                    Console.WriteLine(board.ToString());
+                                    
+                                    
+                                    
 
                                     int k = 0;
 
                                     //All the different guesses at all the different levels
-                                    foreach (KeyValuePair<Board, List<List<List<int>>>> guess in PreviousGuessesDict)
-                                    {
+                                    foreach (KeyValuePair<Board, List<List<List<int>>>> guess in previousGuessesDict)
                                         while (guess.Value[i][j].Contains(solutions[k]))
                                             k++;
-                                    }
 
                                     //If we've trired all our guesses
                                     if(k == solutions.Count)
@@ -127,22 +125,35 @@ namespace SudokuAI
                                     //Else try the next guess
                                     else
                                     {
-                                        int leastEmptySpots = 100;
-                                        Board lastGuessBoard = new Board(new List<List<int>>());
-                                        foreach (KeyValuePair<Board, List<List<List<int>>>> guess in PreviousGuessesDict)
-                                        {
-                                            if (guess.Key.GetEmptySpaceCount() < leastEmptySpots)
-                                                lastGuessBoard = guess.Key;
-                                        }
-
-                                        PreviousGuessesDict[lastGuessBoard][i][j].Add(solutions[k]);
+                                        //Board lastGuessBoard = GetLastGuess(previousGuessesDict);
+                                        //previousGuessesDict[lastGuessBoard][i][j].Add(solutions[k]);
+                                        currentGuess.Value[i][j].Add(solutions[k]);
                                         board[i][j] = solutions[k];
+                                        _playsMade++;
                                         madeProgress = true;
                                     }
+
+                                    bestGuess = 1;
+                                    previousGuessesDict.Add(currentGuess.Key, currentGuess.Value);
+                                    _guessCount++;
+
+                                    List<List<List<int>>> emptyG = new List<List<List<int>>>();
+                                    for (int l = 0; l < 9; l++)
+                                    {
+                                        emptyG.Add(new List<List<int>>());
+                                        for (int m = 0; m < 9; m++)
+                                        {
+                                            emptyG[l].Add(new List<int>());
+                                        }
+                                    }
+
+                                    Board b = new Board(board.Clone());
+                                    currentGuess = new KeyValuePair<Board, List<List<List<int>>>>(b, emptyG);
                                 }
                                 else
                                 {
                                     board[i][j] = solutions[0];
+                                    _playsMade++;
                                     madeProgress = true;
                                     bestGuess = 1;
                                 }
@@ -151,38 +162,29 @@ namespace SudokuAI
                     }
                 }
 
-                //if we weren't able to make any progress, break out of everything, we've done all we can do
+                //if we weren't able to make any progress mkae the next reasonable guess
                 if (!madeProgress)
                     bestGuess++;
 
-                //If there are no more possible plays reset to last board state
+                //If there are no more possible plays reset to last board state and guess again
                 if (bestGuess >= 10)
                 {
-                    int leastEmptySpots = 100;
-                    Board lastGuessBoard = new Board(new List<List<int>>());
-                    foreach(KeyValuePair<Board,  List<List<List<int>>>> guess in PreviousGuessesDict)
-                    {
-                        if(guess.Key.GetEmptySpaceCount() < leastEmptySpots)
-                            lastGuessBoard = guess.Key;
-                    }
-
-                    board = lastGuessBoard;
+                    board = GetLastGuess(previousGuessesDict);
                     bestGuess = 1;
                 }
 
                 //If we've used all the guesses we can, revert to previous guess board with that branch marked as invalid
                 if(exhaustedGuesses)
                 {
-                    int leastEmptySpots = 100;
-                    Board lastGuessBoard = new Board(new List<List<int>>());
-                    foreach(KeyValuePair<Board,  List<List<List<int>>>> guess in PreviousGuessesDict)
-                    {
-                        if(guess.Key.GetEmptySpaceCount() < leastEmptySpots)
-                            lastGuessBoard = guess.Key;
-                    }
+                    //remove the last guess
+                    Board lastGuessBoard = GetLastGuess(previousGuessesDict);
+                    previousGuessesDict.Remove(lastGuessBoard);
 
-                    CurrentGuess = new KeyValuePair<Board,  List<List<List<int>>>>(lastGuessBoard,PreviousGuessesDict[lastGuessBoard]);
-                    PreviousGuessesDict.Remove(lastGuessBoard);
+                    //set the current guess to the previous guess
+                    lastGuessBoard = GetLastGuess(previousGuessesDict);
+                    currentGuess = new KeyValuePair<Board,  List<List<List<int>>>>(lastGuessBoard,previousGuessesDict[lastGuessBoard]);
+                    board = lastGuessBoard;
+
                     bestGuess = 1;
                 }
 
@@ -190,6 +192,23 @@ namespace SudokuAI
 
 
             return board;
+        }
+
+        private Board GetLastGuess(Dictionary<Board, List<List<List<int>>>> guessDict)
+        {
+            int leastEmptySpots = 100;
+            Board lastGuessBoard = new Board(new List<List<int>>());
+
+            foreach (KeyValuePair<Board, List<List<List<int>>>> guess in guessDict)
+            {
+                if (guess.Key.GetEmptySpaceCount() < leastEmptySpots)
+                {
+                    lastGuessBoard = guess.Key;
+                    leastEmptySpots = guess.Key.GetEmptySpaceCount();
+                }
+            }
+
+            return lastGuessBoard;
         }
 
         

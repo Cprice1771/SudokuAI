@@ -1,13 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SudokuAI
 {
     public class Board : List<List<int>>
     {
+        protected bool Equals(Board other)
+        {
+                for (int i = 0; i < 9; i++)
+                    for (int j = 0; j < 9; j++)
+                        if (this[i][j] != other[i][j])
+                            return false;
+
+                return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int sum = 0;
+
+            for (int i = 0; i < 9; i++)
+                for (int j = 0; j < 9; j++)
+                    sum += this[i][j];
+
+            return sum;
+        }
+
         public Board(IEnumerable<List<int>> board): base(board)
         {
 
@@ -23,28 +41,28 @@ namespace SudokuAI
         public void Parse(string file)
         {
 
-            this.Clear();
+            Clear();
 
             string[] lines = System.IO.File.ReadAllLines(file);
 
             foreach (string line in lines)
             {
-                this.Add(new List<int>());
+                Add(new List<int>());
 
                 for (int i = 0; i < line.Length; i++)
                 {
                     if (line[i] == ',')
-                        this[this.Count - 1].Add(-1);
+                        this[Count - 1].Add(-1);
                     else
                     {
-                        this[this.Count - 1].Add(Int32.Parse(line.Substring(i, 1)));
+                        this[Count - 1].Add(Int32.Parse(line.Substring(i, 1)));
                         i++;
                     }
                 }
 
                 //edge case for when the line ends in an empty cell
-                if (this[this.Count - 1].Count == 8)
-                    this[this.Count - 1].Add(-1);
+                if (this[Count - 1].Count == 8)
+                    this[Count - 1].Add(-1);
 
             }
 
@@ -53,7 +71,6 @@ namespace SudokuAI
         /// <summary>
         /// Returns true if the given board has a blank
         /// </summary>
-        /// <param name="board"></param>
         /// <returns></returns>
         public bool Unsolved
         {
@@ -158,7 +175,7 @@ namespace SudokuAI
                     quad = 9;
                 else if (col > 2)
                     quad = 8;
-                else
+                else if (col >= 0)
                     quad = 7;
             }
             else if (row > 2)
@@ -167,7 +184,7 @@ namespace SudokuAI
                     quad = 6;
                 else if (col > 2)
                     quad = 5;
-                else
+                else if (col >= 0)
                     quad = 4;
             }
             else
@@ -176,7 +193,7 @@ namespace SudokuAI
                     quad = 3;
                 else if (col > 2)
                     quad = 2;
-                else
+                else if (col >= 0)
                     quad = 1;
             }
 
@@ -218,6 +235,40 @@ namespace SudokuAI
                         count++;
             return count;
 
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Board)) return false;
+
+            Board other = obj as Board;
+            for (int i = 0; i < 9; i++)
+                for (int j = 0; j < 9; j++)
+                    if (this[i][j] != other[i][j])
+                        return false;
+
+            return true;
+        }
+
+        public override string ToString()
+        {
+            string output = "";
+
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                    output += this[i][j] + " ";
+
+                output += "\n";
+            }
+
+            return output;
+
+        }
+
+        internal IEnumerable<List<int>> Clone()
+        {
+            return this.Clone();
         }
     }
 }

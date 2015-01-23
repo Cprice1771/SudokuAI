@@ -36,14 +36,17 @@
             // 
             // fileTextBox
             // 
-            this.fileTextBox.Location = new System.Drawing.Point(12, 12);
+            this.fileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.fileTextBox.Location = new System.Drawing.Point(3, 12);
             this.fileTextBox.Name = "fileTextBox";
-            this.fileTextBox.Size = new System.Drawing.Size(276, 20);
+            this.fileTextBox.Size = new System.Drawing.Size(294, 20);
             this.fileTextBox.TabIndex = 0;
             // 
             // selectFileButton
             // 
-            this.selectFileButton.Location = new System.Drawing.Point(294, 9);
+            this.selectFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.selectFileButton.Location = new System.Drawing.Point(303, 12);
             this.selectFileButton.Name = "selectFileButton";
             this.selectFileButton.Size = new System.Drawing.Size(41, 23);
             this.selectFileButton.TabIndex = 1;
@@ -53,15 +56,19 @@
             // 
             // solutionBox
             // 
+            this.solutionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.solutionBox.Enabled = false;
-            this.solutionBox.Location = new System.Drawing.Point(13, 39);
+            this.solutionBox.Location = new System.Drawing.Point(3, 39);
             this.solutionBox.Name = "solutionBox";
-            this.solutionBox.Size = new System.Drawing.Size(322, 283);
+            this.solutionBox.Size = new System.Drawing.Size(341, 283);
             this.solutionBox.TabIndex = 2;
             this.solutionBox.Text = "";
             // 
             // runButton
             // 
+            this.runButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.runButton.Location = new System.Drawing.Point(294, 328);
             this.runButton.Name = "runButton";
             this.runButton.Size = new System.Drawing.Size(41, 23);
