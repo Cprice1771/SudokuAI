@@ -30,7 +30,7 @@ namespace SudokuAI
 
         }
 
-        private string PrintBoard(List<List<int>> board)
+        private string PrintBoard(Board board)
         {
             string output = "";
 
@@ -50,6 +50,7 @@ namespace SudokuAI
             output += "Iterations: " + _iterations + "\n";
             output += "Guesses: " + _guessCount + "\n";
             output += "Plays Made: " + _playsMade + "\n";
+            output += "Solved: " + !board.Unsolved;
 
             return output;
         }
@@ -104,11 +105,14 @@ namespace SudokuAI
                             {
                                 Console.WriteLine(board.ToString());
 
-                                currentGuesses.Add(new Guess()
+                                if (!ContainsBoard(currentGuesses, board))
                                 {
-                                    GameBoard = board,
-                                    Guesses = new List<int>()
-                                });
+                                    currentGuesses.Add(new Guess()
+                                    {
+                                        GameBoard = board.Clone(),
+                                        Guesses = new List<int>()
+                                    });
+                                }
 
                                 int index = 0;
                                 //Check to see if we already used this guess
@@ -116,7 +120,7 @@ namespace SudokuAI
                                     index++;
 
                                 //If we've trired all our guesses
-                                if(index == solutions.Count)
+                                if(index >= solutions.Count)
                                     exhaustedGuesses = true;
 
                                 //Else try the next guess
@@ -166,8 +170,11 @@ namespace SudokuAI
                 }
 
                 //If we've used all the guesses we can, revert to previous guess board with that branch marked as invalid
-                if ((exhaustedGuesses || noPlays) && (currentGuesses.Count > 1))
+                if (exhaustedGuesses || noPlays)
                 {
+                    //
+                    if ((currentGuesses.Count == 1))
+                        break;
                     //pop the last guess off the top
                     currentGuesses.RemoveAt(currentGuesses.Count - 1);
 
@@ -183,6 +190,17 @@ namespace SudokuAI
 
 
             return board;
+        }
+
+        private bool ContainsBoard(List<Guess> currentGuesses, Board board)
+        {
+            foreach (Guess guess in currentGuesses)
+            {
+                if (board.Equals(guess.GameBoard))
+                    return true;
+            }
+
+            return false;
         }
 
 

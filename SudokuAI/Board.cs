@@ -266,5 +266,20 @@ namespace SudokuAI
 
         }
 
+        public Board Clone()
+        {
+            List<List<int>> cloneList = new List<List<int>>();
+
+            for (int i = 0; i < 9; i++)
+            {
+                cloneList.Add(new List<int>());
+                for (int j = 0; j < 9; j++)
+                    cloneList[i].Add(this[i][j]);
+            }
+
+            return new Board(cloneList);
+
+        }
+
     }
 }
