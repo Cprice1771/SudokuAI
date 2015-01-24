@@ -266,9 +266,5 @@ namespace SudokuAI
 
         }
 
-        internal IEnumerable<List<int>> Clone()
-        {
-            return this.Clone();
-        }
     }
 }
