@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 
@@ -10,6 +11,7 @@ namespace SudokuAI
         private int _iterations;
         private int _guessCount;
         private int _playsMade;
+        private Stopwatch _runTime;
 
         private const string INPUT = "\\Input\\Medium\\Puzzle188Medium.sd";
 
@@ -17,6 +19,7 @@ namespace SudokuAI
         {
             InitializeComponent();
             fileTextBox.Text = Directory.GetCurrentDirectory() + INPUT;
+            _runTime = new Stopwatch();
         }
 
         private void runButton_Click(object sender, EventArgs e)
@@ -50,7 +53,8 @@ namespace SudokuAI
             output += "Iterations: " + _iterations + "\n";
             output += "Guesses: " + _guessCount + "\n";
             output += "Plays Made: " + _playsMade + "\n";
-            output += "Solved: " + !board.Unsolved;
+            output += "Solved: " + !board.Unsolved + "\n";
+            output += "Time: " + _runTime.ElapsedMilliseconds + " ms" + "\n";
 
             return output;
         }
@@ -72,6 +76,7 @@ namespace SudokuAI
 
         private Board Solve(Board board)
         {
+            _runTime.Restart();
             List<Guess> currentGuesses = new List<Guess>();
 
             int bestGuess = 1;
@@ -188,7 +193,7 @@ namespace SudokuAI
 
             }
 
-
+            _runTime.Stop();
             return board;
         }
 
