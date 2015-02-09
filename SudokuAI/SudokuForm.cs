@@ -99,56 +99,52 @@ namespace SudokuAI
                         {
                             List<int> solutions = board.GetPossibleSolutions(i, j);
 
-                            //If we aren't stuck in a dead end
-                            if (solutions.Count != 0)
+                            if (solutions.Count > 0)
                                 noPlays = false;
 
                             //Make sure we only guess if we have to
                             if (solutions.Count != bestGuess) continue;
+
                             //If were guessing
                             if (bestGuess > 1)
                             {
-                                Console.WriteLine(board.ToString());
-
+                                
+                                int index = 0;
                                 if (!ContainsBoard(currentGuesses, board))
                                 {
+                                    Console.WriteLine(board.ToString());
                                     currentGuesses.Add(new Guess()
                                     {
                                         GameBoard = board.Clone(),
-                                        Guesses = new List<int>()
+                                        Guesses = new List<int>(),
+                                        row = i,
+                                        col = j
+                                        
                                     });
                                 }
 
-                                int index = 0;
-                                //Check to see if we already used this guess
-                                while (index < solutions.Count && currentGuesses[currentGuesses.Count - 1].Guesses.Contains(solutions[index]))
-                                    index++;
-
-                                //If we've trired all our guesses
-                                if(index >= solutions.Count)
-                                    exhaustedGuesses = true;
-
-                                //Else try the next guess
-                                else
+                                if (currentGuesses[currentGuesses.Count - 1].row == i &&
+                                    currentGuesses[currentGuesses.Count - 1].col == j)
                                 {
-                                    currentGuesses[currentGuesses.Count - 1].Guesses.Add(solutions[index]);
-                                    board[i][j] = solutions[index];
-                                    _playsMade++;
-                                    madeProgress = true;
-                                   
+                                    //Check to see if we already used this guess
+                                    while (index < solutions.Count &&
+                                           currentGuesses[currentGuesses.Count - 1].Guesses.Contains(solutions[index]))
+                                        index++;
 
-                                    bestGuess = 1;
-                                        
-                                    _guessCount++;
-
-                                    List<List<List<int>>> emptyG = new List<List<List<int>>>();
-                                    for (int l = 0; l < 9; l++)
+                                    //If we've trired all our guesses
+                                    if (index >= solutions.Count)
+                                        exhaustedGuesses = true;
+                                    //Else try the next guess
+                                    else
                                     {
-                                        emptyG.Add(new List<List<int>>());
-                                        for (int m = 0; m < 9; m++)
-                                        {
-                                            emptyG[l].Add(new List<int>());
-                                        }
+                                        currentGuesses[currentGuesses.Count - 1].Guesses.Add(solutions[index]);
+                                        board[i][j] = solutions[index];
+                                        _playsMade++;
+                                        madeProgress = true;
+                                        bestGuess = 1;
+
+                                        _guessCount++;
+
                                     }
                                 }
                             }
@@ -168,23 +164,33 @@ namespace SudokuAI
                     bestGuess++;
 
                 //If there are no more possible plays reset to last board state and guess again
-                if (bestGuess >= 10 && currentGuesses.Count > 0)
+                if ((bestGuess >= 10 && currentGuesses.Count > 0) || noPlays)
                 {
-                    board = currentGuesses[currentGuesses.Count - 1].GameBoard;
+                    Console.WriteLine("----RESETING FROM----");
+                    Console.WriteLine(board.ToString());
+                    board = currentGuesses[currentGuesses.Count - 1].GameBoard.Clone();
+                    Console.WriteLine("----RESETING TO----");
+                    Console.WriteLine(board.ToString());
                     bestGuess = 1;
                 }
 
                 //If we've used all the guesses we can, revert to previous guess board with that branch marked as invalid
-                if (exhaustedGuesses || noPlays)
+                if (exhaustedGuesses)
                 {
-                    //
-                    if ((currentGuesses.Count == 1))
+                    if (currentGuesses.Count == 1)
                         break;
+
                     //pop the last guess off the top
                     currentGuesses.RemoveAt(currentGuesses.Count - 1);
 
+                    Console.WriteLine("----RESETING FROM----");
+                    Console.WriteLine(board.ToString());
+                    board = currentGuesses[currentGuesses.Count - 1].GameBoard.Clone();
+                    Console.WriteLine("----RESETING TO----");
+                    Console.WriteLine(board.ToString());
+
                     //set the current guess to the previous guess
-                    Board lastGuessBoard = currentGuesses[currentGuesses.Count - 1].GameBoard;
+                    Board lastGuessBoard = currentGuesses[currentGuesses.Count - 1].GameBoard.Clone();
                     board = lastGuessBoard;
                     bestGuess = 1;
 
@@ -213,6 +219,8 @@ namespace SudokuAI
         {
             public Board GameBoard { get; set; }
             public List<int> Guesses;
+            public int row;
+            public int col;
 
         }
         
